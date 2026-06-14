@@ -473,7 +473,8 @@ function buildClientC(data) {
   code = code.replace(/\\\r?\n/g, ' ');
   // Nel browser Picoc non ha filesystem: aux.h viene concatenato sopra.
   code = code.replace(/^\s*#\s*include\s+"aux\.h"\s*$/gm, '');
-  // Picoc non include assert.h: trasformiamo assert(expr) in controllo runtime semplice.
+  // Picoc non carica sempre stdbool/assert come clang: normalizzo prima dell'interprete.
+  code = code.replace(/^\s*#\s*include\s+<stdbool\.h>\s*$/gm, '#ifndef __bool_true_false_are_defined\ntypedef int bool;\n#define true 1\n#define false 0\n#define __bool_true_false_are_defined 1\n#endif');
   code = code.replace(/^\s*#\s*include\s+<assert\.h>\s*$/gm, '');
   code = code.replace(/assert\s*\(([^;]+)\)\s*;/g, 'if (!($1)) { printf("Assertion failed: $1\\n"); return 1; }');
   return code;
