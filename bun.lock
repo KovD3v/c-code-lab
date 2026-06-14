@@ -1,0 +1,15 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "c-code-lab",
+      "dependencies": {
+        "picoc-js": "^1.0.12",
+      },
+    },
+  },
+  "packages": {
+    "picoc-js": ["picoc-js@1.0.12", "", {}, "sha512-Yivcmtui9aG+u5Lf7oq27pqS+MSV18DikO+X+Bjn2HRC6swkqEfbkG/OaNthhsWNtUXCfml+sFBvnAO1yULV/A=="],
+  }
+}

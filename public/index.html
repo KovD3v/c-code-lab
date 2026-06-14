@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CP Lab</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="title-block">
+        <span class="app-name">CP Lab</span>
+      </div>
+
+      <nav class="exercise-nav" aria-label="Navigazione esercizi">
+        <button id="prevExercise" class="icon-btn" title="Esercizio precedente">←</button>
+        <select id="exerciseSelect" class="exercise-select" aria-label="Seleziona esercizio"></select>
+        <button id="nextExercise" class="icon-btn" title="Esercizio successivo">→</button>
+        <select id="year" class="year-select" aria-label="Filtra per anno"><option value="all">Tutti gli anni</option></select>
+      </nav>
+
+      <div class="prefs" aria-label="Preferenze editor">
+        <label class="toggle" title="Se disattivato, il codice resta solo nella pagina finché non premi Salva">
+          <input id="autosaveToggle" type="checkbox" />
+          <span>Autosave</span>
+        </label>
+        <select id="themeSelect" class="theme-select" aria-label="Tema">
+          <option value="dark">Scuro</option>
+          <option value="light">Chiaro</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button id="run" class="primary" title="Esegue nel browser: immediato, senza server; supporto C parziale">Esegui</button>
+        <button id="save" class="ghost" title="Salva il codice nel browser">Salva</button>
+        <button id="reset" class="ghost" title="Chiede conferma e poi ripristina i file originali dell’esercizio">Ripristina</button>
+      </div>
+    </header>
+
+    <section class="leetcode-layout" id="mainLayout">
+      <aside class="problem-panel panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <strong id="problemTitle">Esercizio</strong>
+          </div>
+        </div>
+        <article id="statement" class="statement"></article>
+      </aside>
+
+      <div class="resizer vertical-resizer main-resizer" data-resizer="main" title="Ridimensiona testo/editor" role="separator" aria-orientation="vertical"></div>
+
+      <section class="work-panel" id="workPanel">
+        <article class="editor-card solution panel">
+          <div class="tabbar"><button class="tab active" data-editor="solution">solution.c</button></div>
+          <div class="code-wrap" data-editor-wrap="solution">
+            <pre id="solutionHighlight" class="code-highlight" aria-hidden="true"></pre>
+            <textarea id="solution" spellcheck="false"></textarea>
+          </div>
+        </article>
+
+        <div class="resizer vertical-resizer editor-resizer" data-resizer="editor" title="Ridimensiona editor/aux" role="separator" aria-orientation="vertical"></div>
+
+        <article class="editor-card stack panel">
+          <div class="tabs">
+            <button class="tab active" data-pane="auxH">aux.h</button>
+            <button class="tab" data-pane="auxC">aux.c</button>
+          </div>
+          <div class="code-wrap pane active" data-editor-wrap="auxH">
+            <pre id="auxHHighlight" class="code-highlight" aria-hidden="true"></pre>
+            <textarea id="auxH" spellcheck="false"></textarea>
+          </div>
+          <div class="code-wrap pane" data-editor-wrap="auxC">
+            <pre id="auxCHighlight" class="code-highlight" aria-hidden="true"></pre>
+            <textarea id="auxC" spellcheck="false"></textarea>
+          </div>
+        </article>
+
+        <textarea id="tester" class="hidden-editor" aria-hidden="true" tabindex="-1"></textarea>
+        <textarea id="stdin" class="hidden-editor" aria-hidden="true" tabindex="-1"></textarea>
+
+        <div class="resizer horizontal-resizer output-resizer" data-resizer="output" title="Ridimensiona output" role="separator" aria-orientation="horizontal"></div>
+
+        <article class="output-card panel">
+          <div class="output-head">
+            <strong>Output</strong>
+            <span id="status">idle</span>
+          </div>
+          <pre id="output">Seleziona un esercizio o scrivi codice libero.</pre>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script src="/vendor/picoc-js.umd.js"></script>
+  <script src="/app.js?v=14"></script>
+</body>
+</html>

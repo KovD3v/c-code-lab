@@ -1,0 +1,18 @@
+{
+  "name": "c-code-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun server.js",
+    "start": "bun server.js",
+    "test": "bun run test/smoke.mjs && bun run test/structured-output.mjs && node test/client-runner.cjs",
+    "smoke": "bun run test/smoke.mjs"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "dependencies": {
+    "picoc-js": "^1.0.12"
+  }
+}
