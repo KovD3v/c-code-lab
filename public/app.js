@@ -152,6 +152,28 @@ function setupPrefs() {
 
 function saveKey(ex = current) { return `c-code-lab:${ex.id}`; }
 function snapshot() { return { ...Object.fromEntries(ids.map(id => [id, $(id).value])), __dataVersion: DATA_VERSION }; }
+function slug(text) {
+  return String(text ?? 'esercizio')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'esercizio';
+}
+function downloadCurrentSolution() {
+  const data = snapshot();
+  const filename = `${slug(current?.title || current?.id)}-solution.c`;
+  const blob = new Blob([data.solution || ''], { type: 'text/x-c;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  $('status').textContent = 'download';
+  $('status').className = 'ok';
+}
 function setEditors(data) {
   const safe = { ...data };
   if (!hasUsableTester(safe.tester)) safe.tester = current?.tester || DEFAULT_TESTER;
@@ -642,6 +664,7 @@ $('save').addEventListener('click', () => {
   $('status').textContent = 'salvato';
   $('status').className = 'ok';
 });
+$('download').addEventListener('click', downloadCurrentSolution);
 
 $('reset').addEventListener('click', () => {
   const name = current?.title ?? 'questo esercizio';
