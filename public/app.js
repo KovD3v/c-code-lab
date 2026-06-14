@@ -466,15 +466,28 @@ function normalizeStatementHtml(html) {
   return doc.body.innerHTML;
 }
 
+function normalizeClientHeader(header) {
+  return String(header ?? '')
+    // Picoc non gestisce direttive non standard e alcuni header libc come clang.
+    .replace(/^\s*#\s*pragma\s+once\s*$/gm, '')
+    .replace(/^\s*#\s*include\s+<stdbool\.h>\s*$/gm, '#define true 1\n#define false 0')
+    .replace(/^\s*#\s*include\s+<(time|unistd)\.h>\s*$/gm, '')
+    // Le implementazioni in aux.c sono concatenate subito dopo: i prototipi di aux.h non servono
+    // e alcuni prototipi con typedef/puntatori mandano in crisi il parser Picoc.
+    .replace(/^\s*[A-Za-z_]\w*(?:\s+|\s*\*\s*)+[A-Za-z_]\w*\s*\([^;{}]*\)\s*;\s*$/gm, '');
+}
+
 function buildClientC(data) {
-  let code = [data.auxH, data.auxC, data.solution, data.tester].join('\n\n');
-  // Picoc non gestisce direttive non standard e macro multi-linea come un preprocessore C completo.
-  code = code.replace(/^\s*#\s*pragma\s+once\s*$/gm, '');
+  let code = [normalizeClientHeader(data.auxH), data.auxC, data.solution, data.tester].join('\n\n');
   code = code.replace(/\\\r?\n/g, ' ');
+  code = code.replace(/\bbool\b/g, 'int');
+  code = code.replace(/^\s*typedef\s+int\s+TipoInfoAlbero\s*;\s*$/gm, '');
+  code = code.replace(/\bTipoInfoAlbero\b/g, 'int');
+  code = code.replace(/\bTipoAlbero\s*\*/g, 'TipoNodoAlbero **');
+  // Picoc-js in browser/Node gestisce male il return non-zero da main: teniamo il giudizio nei marker __CLAB_*.
+  code = code.replace(/return\s+clab_failed\s*\?\s*1\s*:\s*0\s*;/g, 'return 0;');
   // Nel browser Picoc non ha filesystem: aux.h viene concatenato sopra.
   code = code.replace(/^\s*#\s*include\s+"aux\.h"\s*$/gm, '');
-  // Picoc non carica sempre stdbool/assert come clang: normalizzo prima dell'interprete.
-  code = code.replace(/^\s*#\s*include\s+<stdbool\.h>\s*$/gm, '#ifndef __bool_true_false_are_defined\ntypedef int bool;\n#define true 1\n#define false 0\n#define __bool_true_false_are_defined 1\n#endif');
   code = code.replace(/^\s*#\s*include\s+<assert\.h>\s*$/gm, '');
   code = code.replace(/assert\s*\(([^;]+)\)\s*;/g, 'if (!($1)) { printf("Assertion failed: $1\\n"); return 1; }');
   return code;
@@ -557,7 +570,7 @@ function runInBrowser(data) {
       window.picocjs.runC(buildClientC(data), chunk => { stdout += String(chunk ?? ''); });
       setTimeout(() => {
         const protocol = parseTestProtocol(stdout);
-        const runtimeError = /Assertion failed|can't read file|parse error|error/i.test(stdout);
+        const runtimeError = /Assertion failed|can't read file|parse error|file\.c:\d+|; expected|error/i.test(stdout);
         const failedTests = protocol.hasProtocol && protocol.failedCount > 0;
         finish(!runtimeError && !failedTests, runtimeError ? stdout : '');
       }, 80);
@@ -590,6 +603,21 @@ async function run(mode) {
   }
 }
 
+async function configureServerButton() {
+  const btn = $('runServer');
+  if (!btn) return;
+  try {
+    const health = await fetch('/api/health', { cache: 'no-store' }).then(r => r.json());
+    if (health.apiRun === false) {
+      btn.disabled = true;
+      btn.title = 'Runner server non attivo su questo deploy: usa Esegui o avvia il server locale.';
+    }
+  } catch {
+    btn.disabled = true;
+    btn.title = 'Runner server non raggiungibile.';
+  }
+}
+
 async function init() {
   setupPrefs();
   try {
@@ -603,6 +631,7 @@ async function init() {
   setupHighlighting();
   selectExercise(localStorage.getItem('c-code-lab:last') || 'free');
   setupResizablePanels();
+  configureServerButton();
 }
 
 $('run').addEventListener('click', () => run('browser'));
